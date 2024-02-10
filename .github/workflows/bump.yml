@@ -15,14 +15,20 @@ jobs:
         with:
           ssh-key: ${{ secrets.SSH_KEY }}
       -
-        name: Get version
+        name: Get gem version
         run: |
           echo RUBY_VERSION=$(curl -fsSL https://pages.github.com/versions.json | jq -r '."ruby"') | tee /dev/stderr >> $GITHUB_ENV
           echo GEM_VERSION=$(curl -fsSL https://pages.github.com/versions.json | jq -r '."github-pages"') | tee /dev/stderr >> $GITHUB_ENV
       -
+        name: Get bundler version
+        run: |
+          echo BUNDLER_VERSION=$(curl -fsSL https://rubygems.org/api/v1/versions/bundler.json | jq -r ".[] | select(.ruby_version) | select(.ruby_version | ltrimstr(\">= \") | split(\".\") <= $(echo \"${RUBY_VERSION}\" | jq -c "split(\".\")")) | select(.number | test(\"^\\\\d+\\\\.\\\\d+\\\\.\\\\d+\$\")) | .number" | head -n1) | tee /dev/stderr >> $GITHUB_ENV
+      -
         name: Bump
         run: |
-          sed Dockerfile -i -e "s/\(FROM ruby\):.*/\1:${RUBY_VERSION}-slim/" -e "s/\(github-pages -v\) [0-9]\+ /\1 ${GEM_VERSION} /"
+          sed Dockerfile -i -e "s/\(FROM ruby\):.*/\1:${RUBY_VERSION}-slim/"
+          sed Dockerfile -i -e "s/\(\"github-pages\",\) \"[0-9]\+\"/\1 \"${GEM_VERSION}\"/"
+          sed Dockerfile -i -e "s/\(bundler -v\) [0-9.]\+/\1 ${BUNDLER_VERSION}/"
           if ! git diff --exit-code
           then
             git config --global user.name "github-actions[bot]"
