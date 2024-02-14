@@ -3,7 +3,7 @@ LABEL maintainer="naoigcat <17925623+naoigcat@users.noreply.github.com>"
 RUN apt-get update && \
     apt-get install -y --no-install-recommends g++ make && \
     gem install bundler -v 2.4.22 && \
-    echo 'source "https://rubygems.org"\ngem "github-pages", "229"' > Gemfile && \
+    echo 'source "https://rubygems.org"\ngem "github-pages", "230"' > Gemfile && \
     bundle install && \
     gem uninstall bundler -v 2.4.22 && \
     mkdir -p /src/site
