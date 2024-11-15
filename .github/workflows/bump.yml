@@ -36,5 +36,5 @@ jobs:
             git commit -am "Bump version to ${GEM_VERSION}"
             git tag ${GEM_VERSION}
             git push
-            git push --tags
+            git push --tags --force
           fi
