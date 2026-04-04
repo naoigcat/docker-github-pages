@@ -18,3 +18,13 @@ docker pull naoigcat/github-pages
 ```sh
 docker run --rm -v ${PWD}:/src/site -p 4000:4000 naoigcat/github-pages
 ```
+
+### If file changes are not detected on macOS (Docker Desktop)
+
+With bind mounts in Docker Desktop, file change events from the host may not be reliably propagated into the container.
+In that case, using polling-based watching can detect updates.
+
+```sh
+docker run --rm -v ${PWD}:/src/site -p 4000:4000 naoigcat/github-pages \
+    jekyll serve -w --force_polling -H 0.0.0.0 -P 4000
+```
