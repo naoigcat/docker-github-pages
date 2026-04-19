@@ -25,12 +25,30 @@ jobs:
       -
         name: Get gem version
         run: |
-          echo RUBY_VERSION=$(curl -fsSL --retry 3 --retry-delay 2 https://pages.github.com/versions.json | jq -r '."ruby"') | tee /dev/stderr >> $GITHUB_ENV
-          echo GEM_VERSION=$(curl -fsSL --retry 3 --retry-delay 2 https://pages.github.com/versions.json | jq -r '."github-pages"') | tee /dev/stderr >> $GITHUB_ENV
+          set -euo pipefail
+          VERSIONS_JSON=$(curl -fsSL --retry 3 --retry-delay 2 https://pages.github.com/versions.json)
+          RUBY_VERSION=$(echo "$VERSIONS_JSON" | jq -r '."ruby"')
+          GEM_VERSION=$(echo "$VERSIONS_JSON" | jq -r '."github-pages"')
+          if [[ -z "$RUBY_VERSION" || "$RUBY_VERSION" == "null" ]]; then
+            echo "::error::Could not obtain RUBY_VERSION from versions.json"
+            exit 1
+          fi
+          if [[ -z "$GEM_VERSION" || "$GEM_VERSION" == "null" ]]; then
+            echo "::error::Could not obtain GEM_VERSION from versions.json"
+            exit 1
+          fi
+          echo "RUBY_VERSION=$RUBY_VERSION" | tee /dev/stderr >> "$GITHUB_ENV"
+          echo "GEM_VERSION=$GEM_VERSION" | tee /dev/stderr >> "$GITHUB_ENV"
       -
         name: Get bundler version
         run: |
-          echo BUNDLER_VERSION=$(curl -fsSL --retry 3 --retry-delay 2 https://rubygems.org/api/v1/versions/bundler.json | jq -r ".[] | select(.ruby_version) | select(.ruby_version | ltrimstr(\">= \") | split(\".\") <= $(echo \"${RUBY_VERSION}\" | jq -c "split(\".\")")) | select(.number | test(\"^\\\\d+\\\\.\\\\d+\\\\.\\\\d+\$\")) | .number" | head -n1) | tee /dev/stderr >> $GITHUB_ENV
+          set -euo pipefail
+          BUNDLER_VERSION=$(curl -fsSL --retry 3 --retry-delay 2 https://rubygems.org/api/v1/versions/bundler.json | jq -r ".[] | select(.ruby_version) | select(.ruby_version | ltrimstr(\">= \") | split(\".\") <= $(echo \"${RUBY_VERSION}\" | jq -c "split(\".\")")) | select(.number | test(\"^\\\\d+\\\\.\\\\d+\\\\.\\\\d+\$\")) | .number" | head -n1)
+          if [[ -z "$BUNDLER_VERSION" || "$BUNDLER_VERSION" == "null" ]]; then
+            echo "::error::Could not obtain BUNDLER_VERSION compatible with Ruby ${RUBY_VERSION}"
+            exit 1
+          fi
+          echo "BUNDLER_VERSION=$BUNDLER_VERSION" | tee /dev/stderr >> "$GITHUB_ENV"
       -
         name: Bump
         run: |
