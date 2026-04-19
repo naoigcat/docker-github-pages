@@ -43,7 +43,35 @@ jobs:
         name: Get bundler version
         run: |
           set -euo pipefail
-          BUNDLER_VERSION=$(curl -fsSL --retry 3 --retry-delay 2 https://rubygems.org/api/v1/versions/bundler.json | jq -r ".[] | select(.ruby_version) | select(.ruby_version | ltrimstr(\">= \") | split(\".\") <= $(echo \"${RUBY_VERSION}\" | jq -c "split(\".\")")) | select(.number | test(\"^\\\\d+\\\\.\\\\d+\\\\.\\\\d+\$\")) | .number" | head -n1)
+          BUNDLER_VERSION=$(curl -fsSL --retry 3 --retry-delay 2 https://rubygems.org/api/v1/versions/bundler.json | jq -r "
+            def pad_version(\$length):
+              . as \$parts
+              | \$parts + [range(0; \$length - (\$parts | length)) | 0];
+            def version_lte(\$left; \$right):
+              ([(\$left | length), (\$right | length)] | max) as \$length
+              | (\$left | pad_version(\$length)) as \$left_padded
+              | (\$right | pad_version(\$length)) as \$right_padded
+              | reduce range(0; \$length) as \$index
+                  ({result: true, done: false};
+                    if .done then .
+                    elif \$left_padded[\$index] < \$right_padded[\$index] then {result: true, done: true}
+                    elif \$left_padded[\$index] > \$right_padded[\$index] then {result: false, done: true}
+                    else .
+                    end
+                  )
+              | .result;
+            .[]
+            | select(.ruby_version)
+            | select(
+                ([.ruby_version | scan(\"[0-9]+(\\\\.[0-9]+)*\")][0]) as \$required_ruby
+                | \$required_ruby != null
+                  and version_lte(
+                    (\$required_ruby | split(\".\") | map(tonumber));
+                    $(echo \"${RUBY_VERSION}\" | jq -c 'split(".") | map(tonumber)')
+                  )
+              )
+            | select(.number | test(\"^\\\\d+\\\\.\\\\d+\\\\.\\\\d+\$\"))
+            | .number" | head -n1)
           if [[ -z "$BUNDLER_VERSION" || "$BUNDLER_VERSION" == "null" ]]; then
             echo "::error::Could not obtain BUNDLER_VERSION compatible with Ruby ${RUBY_VERSION}"
             exit 1
