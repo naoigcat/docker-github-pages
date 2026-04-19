@@ -42,7 +42,7 @@ jobs:
             git config --global user.name "github-actions[bot]"
             git config --global user.email "github-actions[bot]@users.noreply.github.com"
             git commit -am "Bump version to ${GEM_VERSION}"
-            git tag ${GEM_VERSION}
+            git tag "${GEM_VERSION}"
             git push
-            git push --tags --force
+            git push origin "refs/tags/${GEM_VERSION}"
           fi
