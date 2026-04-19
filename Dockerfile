@@ -16,7 +16,7 @@ RUN apt-get update \
         g++ \
         make \
     && gem install bundler -v 4.0.9 --no-document \
-    && echo 'source "https://rubygems.org"\ngem "github-pages", "232"' > /Gemfile \
+    && printf '%s\n' 'source "https://rubygems.org"' 'gem "github-pages", "232"' > /Gemfile \
     && bundle install --gemfile=/Gemfile \
     && rm -f /Gemfile /Gemfile.lock \
     && gem uninstall bundler -v 4.0.9 \
