@@ -15,6 +15,8 @@ docker pull naoigcat/github-pages
 
 ## Usage
 
+The image declares TCP port **4000** (`EXPOSE 4000`) for the Jekyll server started by the default command (`jekyll serve` on `0.0.0.0:4000`). Map it to the host when you run the container, for example with `-p 4000:4000` as shown below.
+
 ```sh
 docker run --rm -v ${PWD}:/src/site -p 4000:4000 naoigcat/github-pages
 ```
