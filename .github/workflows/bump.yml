@@ -63,7 +63,7 @@ jobs:
             .[]
             | select(.ruby_version)
             | select(
-                ([.ruby_version | scan(\"[0-9]+(\\\\.[0-9]+)*\")][0]) as \$required_ruby
+                ([.ruby_version | scan(\"([0-9]+(?:\\\\.[0-9]+)*)\")][0][0]) as \$required_ruby
                 | \$required_ruby != null
                   and version_lte(
                     (\$required_ruby | split(\".\") | map(tonumber));
