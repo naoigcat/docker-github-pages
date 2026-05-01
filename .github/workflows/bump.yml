@@ -90,5 +90,5 @@ jobs:
             git commit -am "Bump version to ${GEM_VERSION}"
             git tag "${GEM_VERSION}"
             git push
-            git push origin "refs/tags/${GEM_VERSION}"
+            git push --force origin "refs/tags/${GEM_VERSION}"
           fi
