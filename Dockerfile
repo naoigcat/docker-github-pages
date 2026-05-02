@@ -15,11 +15,11 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         g++ \
         make \
-    && gem install bundler -v 4.0.10 --no-document \
+    && gem install bundler -v 4.0.11 --no-document \
     && printf '%s\n' 'source "https://rubygems.org"' 'gem "github-pages", "232"' > /Gemfile \
     && bundle install --gemfile=/Gemfile \
     && rm -f /Gemfile /Gemfile.lock \
-    && gem uninstall bundler -v 4.0.10 \
+    && gem uninstall bundler -v 4.0.11 \
     && apt-get purge -y --auto-remove g++ make \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /src/site
